@@ -1,4 +1,4 @@
-const CACHE_NAME = 'photo52-v2';
+const CACHE_NAME = 'photo52-v3';
 const APP_SHELL = [
   './',
   './index.html',

@@ -134,11 +134,24 @@ function renderTimelineView(photos, startDate) {
           <div class="timeline-week">Week ${photo.weekNumber}${prompt ? ` \u2014 ${escapeHTML(prompt.title)}` : ''}</div>
           <div class="timeline-date">${dates}</div>
           ${photo.title ? `<div class="timeline-title">${escapeHTML(photo.title)}</div>` : ''}
+          ${renderTimelineExif(photo.exif)}
         </div>
       </div>
     `;
   }
   return html;
+}
+
+function renderTimelineExif(exif) {
+  if (!exif) return '';
+  const tags = [];
+  if (exif.camera) tags.push(exif.camera);
+  if (exif.focalLength) tags.push(exif.focalLength);
+  if (exif.aperture) tags.push(exif.aperture);
+  if (exif.shutterSpeed) tags.push(exif.shutterSpeed);
+  if (exif.iso) tags.push(`ISO ${exif.iso}`);
+  if (tags.length === 0) return '';
+  return `<div class="timeline-exif">${tags.map(t => `<span class="timeline-exif-tag">${escapeHTML(t)}</span>`).join('')}</div>`;
 }
 
 // ── Lightbox ────────────────────────────────────────────

@@ -501,14 +501,15 @@ input, textarea, select { font: inherit; color: inherit; }
   50% { box-shadow: 0 0 8px 3px var(--accent-glow); }
 }
 
-/* Gallery-size grid */
+/* Gallery-size grid — fewer columns for bigger thumbnails */
 .week-grid--large {
-  gap: 4px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
 }
 
 .week-grid--large .week-cell {
-  border-radius: var(--radius-sm);
-  font-size: 10px;
+  border-radius: var(--radius-md);
+  font-size: 11px;
 }
 
 /* ============================================
@@ -870,6 +871,22 @@ textarea.field-input {
   font-size: 12px;
   color: var(--text-secondary);
   margin-top: 2px;
+}
+
+.timeline-exif {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+}
+
+.timeline-exif-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
 }
 
 /* ============================================
