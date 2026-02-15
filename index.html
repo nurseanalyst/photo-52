@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="photo-52">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="description" content="A 52-week photo challenge tracker. One photo per week, all year.">
+  <link rel="apple-touch-icon" href="icon-192.svg">
+  <link rel="icon" href="icon-192.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
+  <title>photo-52</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="app-header">
+      <h1 class="app-title">photo-52</h1>
+      <span class="week-badge" id="weekBadge">Week 1</span>
+    </header>
+
+    <!-- Screens -->
+    <main class="screens">
+      <!-- Home Screen -->
+      <section id="screen-home" class="screen active" data-screen="home">
+        <div class="screen-content" id="homeContent">
+          <!-- Populated by progress.js -->
+        </div>
+      </section>
+
+      <!-- Upload Screen -->
+      <section id="screen-upload" class="screen" data-screen="upload">
+        <div class="screen-content" id="uploadContent">
+          <!-- Populated by upload.js -->
+        </div>
+      </section>
+
+      <!-- Gallery Screen -->
+      <section id="screen-gallery" class="screen" data-screen="gallery">
+        <div class="screen-content" id="galleryContent">
+          <!-- Populated by gallery.js -->
+        </div>
+      </section>
+
+      <!-- Settings Screen -->
+      <section id="screen-settings" class="screen" data-screen="settings">
+        <div class="screen-content" id="settingsContent">
+          <!-- Populated by settings UI -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Lightbox Overlay -->
+    <div id="lightbox" class="lightbox" hidden>
+      <div class="lightbox-backdrop"></div>
+      <div class="lightbox-content" id="lightboxContent"></div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div id="modal" class="modal-overlay" hidden>
+      <div class="modal" id="modalContent"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Confetti Canvas -->
+    <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-tab active" data-tab="home" data-action="navigate">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-tab" data-tab="upload" data-action="navigate">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="16"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        <span class="nav-label">Upload</span>
+      </button>
+      <button class="nav-tab" data-tab="gallery" data-action="navigate">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        <span class="nav-label">Gallery</span>
+      </button>
+      <button class="nav-tab" data-tab="settings" data-action="navigate">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span class="nav-label">Settings</span>
+      </button>
+    </nav>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
