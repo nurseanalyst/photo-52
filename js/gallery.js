@@ -1,6 +1,6 @@
 import { getAllPhotos, getPhoto, deletePhoto } from './db.js';
 import { blobToDataURL, renderExifHTML } from './photo.js';
-import { getCurrentWeek } from './progress.js';
+import { getCurrentWeek, getWeekDateRange } from './progress.js';
 import { getPromptForWeek } from './prompts.js';
 import { getSettings } from './db.js';
 import { showToast, showModal, formatDate } from './ui.js';
@@ -8,13 +8,16 @@ import { showToast, showModal, formatDate } from './ui.js';
 let currentDB = null;
 let currentView = 'grid';
 let cachedThumbnails = {};
+let cachedStartDate = null;
 
 export async function renderGallery(db) {
   currentDB = db;
   const container = document.getElementById('galleryContent');
   const photos = await getAllPhotos(db);
   const settings = await getSettings(db);
-  const currentWeek = getCurrentWeek(settings?.challengeStartDate);
+  const startDate = settings?.challengeStartDate;
+  cachedStartDate = startDate;
+  const currentWeek = getCurrentWeek(startDate);
   const completedWeeks = new Set(photos.map(p => p.weekNumber));
 
   // Preload thumbnails
@@ -32,8 +35,8 @@ export async function renderGallery(db) {
 
     <div id="galleryView">
       ${currentView === 'grid'
-        ? renderGridView(currentWeek, completedWeeks, photos)
-        : renderTimelineView(photos)
+        ? renderGridView(currentWeek, completedWeeks, photos, startDate)
+        : renderTimelineView(photos, startDate)
       }
     </div>
   `;
@@ -62,7 +65,7 @@ export async function renderGallery(db) {
   });
 }
 
-function renderGridView(currentWeek, completedWeeks, photos) {
+function renderGridView(currentWeek, completedWeeks, photos, startDate) {
   if (photos.length === 0) {
     return `
       <div class="empty-state">
@@ -88,17 +91,20 @@ function renderGridView(currentWeek, completedWeeks, photos) {
     if (isFuture) cls += ' week-cell--future';
 
     const thumb = cachedThumbnails[w];
+    const dates = getWeekDateRange(w, startDate);
+    const prompt = getPromptForWeek(w);
+    const tooltip = `Week ${w}: ${prompt ? prompt.title : ''} (${dates})`;
     const content = thumb
       ? `<img src="${thumb}" alt="Week ${w}" loading="lazy">`
       : `${w}`;
 
-    html += `<div class="${cls}" data-week="${w}">${content}</div>`;
+    html += `<div class="${cls}" data-week="${w}" title="${tooltip}">${content}</div>`;
   }
   html += '</div>';
   return html;
 }
 
-function renderTimelineView(photos) {
+function renderTimelineView(photos, startDate) {
   if (photos.length === 0) {
     return `
       <div class="empty-state">
@@ -117,6 +123,7 @@ function renderTimelineView(photos) {
     if (!thumb) continue;
 
     const prompt = getPromptForWeek(photo.weekNumber);
+    const dates = getWeekDateRange(photo.weekNumber, startDate);
 
     html += `
       <div class="timeline-item">
@@ -124,9 +131,9 @@ function renderTimelineView(photos) {
           <img src="${thumb}" alt="Week ${photo.weekNumber}">
         </div>
         <div class="timeline-meta">
-          <div class="timeline-week">Week ${photo.weekNumber}${prompt ? ` — ${escapeHTML(prompt.title)}` : ''}</div>
+          <div class="timeline-week">Week ${photo.weekNumber}${prompt ? ` \u2014 ${escapeHTML(prompt.title)}` : ''}</div>
+          <div class="timeline-date">${dates}</div>
           ${photo.title ? `<div class="timeline-title">${escapeHTML(photo.title)}</div>` : ''}
-          <div class="timeline-date">${formatDate(photo.dateTaken)}</div>
         </div>
       </div>
     `;
@@ -145,12 +152,14 @@ async function openLightbox(weekNumber) {
 
   const imageURL = photo.imageBlob ? await blobToDataURL(photo.imageBlob) : cachedThumbnails[weekNumber];
   const prompt = getPromptForWeek(weekNumber);
+  const weekDates = getWeekDateRange(weekNumber, cachedStartDate);
 
   content.innerHTML = `
     <div class="lightbox-header">
       <div>
         <span class="week-badge">Week ${weekNumber}</span>
         ${prompt ? `<span style="color: var(--text-secondary); font-size: 13px; margin-left: 8px;">${escapeHTML(prompt.title)}</span>` : ''}
+        <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 2px;">${weekDates}</div>
       </div>
       <button class="lightbox-close" id="lightboxClose">&times;</button>
     </div>

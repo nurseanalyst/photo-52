@@ -1,9 +1,10 @@
-const CACHE_NAME = 'photo52-v1';
+const CACHE_NAME = 'photo52-v2';
 const APP_SHELL = [
   './',
   './index.html',
   './style.css',
   './manifest.json',
+  './icon-180.png',
   './icon-192.svg',
   './icon-512.svg',
   './js/app.js',

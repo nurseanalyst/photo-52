@@ -1,7 +1,7 @@
 import { getPhoto, savePhoto, getAllPhotos, getSettings } from './db.js';
 import { extractExif, resizeImage, generateThumbnail, blobToDataURL, renderExifHTML } from './photo.js';
 import { getPromptForWeek } from './prompts.js';
-import { getCurrentWeek, checkAndShowMilestone } from './progress.js';
+import { getCurrentWeek, checkAndShowMilestone, getWeekDateRange } from './progress.js';
 import { showToast } from './ui.js';
 
 let currentDB = null;
@@ -25,17 +25,20 @@ export async function renderUpload(db) {
 
   const prompt = getPromptForWeek(selectedWeek);
   const hasPhoto = filledWeeks.has(selectedWeek);
+  const startDate = settings?.challengeStartDate;
+  const weekDates = getWeekDateRange(selectedWeek, startDate);
 
   container.innerHTML = `
     <div class="upload-section">
       <div class="upload-section-title">Select Week</div>
       <div class="week-selector" id="weekSelector">
-        ${buildWeekPills(currentWeekNum, filledWeeks)}
+        ${buildWeekPills(currentWeekNum, filledWeeks, startDate)}
       </div>
     </div>
 
     <div class="prompt-card" style="margin-bottom: var(--space-lg)">
-      <div class="prompt-week">Week ${selectedWeek} &middot; ${prompt ? getArcLabel(selectedWeek) : ''}</div>
+      <div class="prompt-week">Week ${selectedWeek} &middot; ${weekDates}</div>
+      <div class="prompt-arc" style="font-size:11px; color:var(--text-tertiary); margin-bottom:var(--space-xs);">${prompt ? getArcLabel(selectedWeek) : ''}</div>
       <div class="prompt-title">${prompt ? escapeHTML(prompt.title) : 'Unknown'}</div>
       <div class="prompt-description">${prompt ? escapeHTML(prompt.description) : ''}</div>
       <div class="prompt-tips">${prompt ? escapeHTML(prompt.tips) : ''}</div>
@@ -53,15 +56,16 @@ export async function renderUpload(db) {
   scrollToActiveWeek();
 }
 
-function buildWeekPills(currentWeek, filledWeeks) {
+function buildWeekPills(currentWeek, filledWeeks, startDate) {
   let html = '';
   for (let w = 1; w <= 52; w++) {
     const isActive = w === selectedWeek;
     const hasPic = filledWeeks.has(w);
+    const dates = getWeekDateRange(w, startDate);
     const cls = ['week-pill'];
     if (isActive) cls.push('active');
     if (hasPic) cls.push('week-pill--has-photo');
-    html += `<button class="${cls.join(' ')}" data-week="${w}">W${w}</button>`;
+    html += `<button class="${cls.join(' ')}" data-week="${w}" title="${dates}">W${w}</button>`;
   }
   return html;
 }

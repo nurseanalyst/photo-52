@@ -7,12 +7,7 @@ import { showCelebration, animateCounter } from './ui.js';
 
 export function getCurrentWeek(startDate) {
   if (!startDate) {
-    const now = new Date();
-    const jan1 = new Date(now.getFullYear(), 0, 1);
-    const dayOfWeek = jan1.getDay();
-    const firstMonday = new Date(jan1);
-    firstMonday.setDate(jan1.getDate() + ((8 - dayOfWeek) % 7));
-    startDate = firstMonday.toISOString().split('T')[0];
+    startDate = getDefaultStartDate();
   }
 
   const start = new Date(startDate + 'T00:00:00');
@@ -20,6 +15,32 @@ export function getCurrentWeek(startDate) {
   const diff = now - start;
   const weeks = Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1;
   return Math.max(1, Math.min(53, weeks));
+}
+
+export function getDefaultStartDate() {
+  const now = new Date();
+  const jan1 = new Date(now.getFullYear(), 0, 1);
+  const dayOfWeek = jan1.getDay();
+  const firstMonday = new Date(jan1);
+  firstMonday.setDate(jan1.getDate() + ((8 - dayOfWeek) % 7));
+  return firstMonday.toISOString().split('T')[0];
+}
+
+export function getWeekDateRange(weekNumber, startDate) {
+  if (!startDate) startDate = getDefaultStartDate();
+  const start = new Date(startDate + 'T00:00:00');
+  const weekStart = new Date(start);
+  weekStart.setDate(start.getDate() + (weekNumber - 1) * 7);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+
+  const opts = { month: 'short', day: 'numeric' };
+  const startStr = weekStart.toLocaleDateString('en-US', opts);
+  const endOpts = weekStart.getMonth() === weekEnd.getMonth()
+    ? { day: 'numeric' }
+    : opts;
+  const endStr = weekEnd.toLocaleDateString('en-US', endOpts);
+  return `${startStr}\u2013${endStr}`;
 }
 
 // ── Stats Calculation ───────────────────────────────────
@@ -125,11 +146,13 @@ export async function renderHome(db) {
 
   const photos = await getAllPhotos(db);
   const settings = await getSettings(db);
-  const stats = calculateStats(photos, settings?.challengeStartDate);
+  const startDate = settings?.challengeStartDate;
+  const stats = calculateStats(photos, startDate);
   const currentWeek = stats.currentWeek;
   const prompt = getPromptForWeek(Math.min(currentWeek, 52));
   const completedWeeks = new Set(photos.map(p => p.weekNumber));
   const hasCurrentWeekPhoto = completedWeeks.has(currentWeek);
+  const currentWeekDates = currentWeek <= 52 ? getWeekDateRange(currentWeek, startDate) : '';
 
   // Load thumbnails for filled cells
   const thumbnails = {};
@@ -169,7 +192,7 @@ export async function renderHome(db) {
     <!-- This Week's Prompt -->
     ${currentWeek <= 52 ? `
     <div class="prompt-card">
-      <div class="prompt-week">Week ${currentWeek} — This Week</div>
+      <div class="prompt-week">Week ${currentWeek} &middot; ${currentWeekDates}</div>
       <div class="prompt-title">${prompt ? escapeHTML(prompt.title) : ''}</div>
       <div class="prompt-description">${prompt ? escapeHTML(prompt.description) : ''}</div>
       <div class="prompt-tips">${prompt ? escapeHTML(prompt.tips) : ''}</div>
@@ -216,7 +239,7 @@ export async function renderHome(db) {
     <div class="week-grid-section">
       <div class="week-grid-title">Your Year</div>
       <div class="week-grid">
-        ${buildWeekGrid(currentWeek, completedWeeks, thumbnails)}
+        ${buildWeekGrid(currentWeek, completedWeeks, thumbnails, startDate)}
       </div>
     </div>
   `;
@@ -226,7 +249,7 @@ export async function refreshHome(db) {
   await renderHome(db);
 }
 
-function buildWeekGrid(currentWeek, completedWeeks, thumbnails) {
+function buildWeekGrid(currentWeek, completedWeeks, thumbnails, startDate) {
   let html = '';
   for (let w = 1; w <= 52; w++) {
     const filled = completedWeeks.has(w);
@@ -241,11 +264,14 @@ function buildWeekGrid(currentWeek, completedWeeks, thumbnails) {
     if (isFuture) cls += ' week-cell--future';
 
     const thumb = thumbnails[w];
+    const dates = getWeekDateRange(w, startDate);
+    const prompt = getPromptForWeek(w);
+    const tooltip = `Week ${w}: ${prompt ? prompt.title : ''} (${dates})`;
     const content = thumb
       ? `<img src="${thumb}" alt="Week ${w}" loading="lazy">`
       : `${w}`;
 
-    html += `<div class="${cls}" data-week="${w}" title="Week ${w}">${content}</div>`;
+    html += `<div class="${cls}" data-week="${w}" title="${tooltip}">${content}</div>`;
   }
   return html;
 }

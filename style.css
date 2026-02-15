@@ -111,7 +111,7 @@ input, textarea, select { font: inherit; color: inherit; }
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-width: 480px;
+  max-width: 600px;
   margin: 0 auto;
   position: relative;
   background: var(--bg-primary);
@@ -125,9 +125,9 @@ input, textarea, select { font: inherit; color: inherit; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: var(--header-height);
-  padding: 0 var(--space-md);
-  padding-top: var(--safe-top);
+  min-height: var(--header-height);
+  padding: var(--space-sm) var(--space-md);
+  padding-top: calc(var(--safe-top) + var(--space-sm));
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
@@ -195,7 +195,7 @@ input, textarea, select { font: inherit; color: inherit; }
 .bottom-nav {
   display: flex;
   align-items: stretch;
-  height: var(--nav-height);
+  min-height: var(--nav-height);
   padding-bottom: var(--safe-bottom);
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-subtle);
@@ -224,8 +224,8 @@ input, textarea, select { font: inherit; color: inherit; }
 }
 
 .nav-icon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 
 .nav-label {
@@ -1134,7 +1134,7 @@ textarea.field-input {
   flex-direction: column;
   gap: var(--space-sm);
   pointer-events: none;
-  max-width: 480px;
+  max-width: 600px;
   margin: 0 auto;
 }
 
@@ -1304,7 +1304,7 @@ textarea.field-input {
    Responsive
    ============================================ */
 
-@media (min-width: 481px) {
+@media (min-width: 601px) {
   #app {
     border-left: 1px solid var(--border-subtle);
     border-right: 1px solid var(--border-subtle);
