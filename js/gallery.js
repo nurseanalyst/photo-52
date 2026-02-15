@@ -143,14 +143,14 @@ function renderTimelineView(photos, startDate) {
 }
 
 function renderTimelineExif(exif) {
-  if (!exif) return '<div class="timeline-exif"><span class="timeline-exif-tag">No metadata</span></div>';
+  if (!exif) return '';
   const tags = [];
   if (exif.camera) tags.push(String(exif.camera));
   if (exif.focalLength) tags.push(String(exif.focalLength));
   if (exif.aperture) tags.push(String(exif.aperture));
   if (exif.shutterSpeed) tags.push(String(exif.shutterSpeed));
   if (exif.iso) tags.push('ISO ' + String(exif.iso));
-  if (tags.length === 0) return '<div class="timeline-exif"><span class="timeline-exif-tag">No metadata</span></div>';
+  if (tags.length === 0) return '';
   return `<div class="timeline-exif">${tags.map(t => `<span class="timeline-exif-tag">${escapeHTML(t)}</span>`).join('')}</div>`;
 }
 
